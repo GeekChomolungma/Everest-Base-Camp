@@ -11,7 +11,7 @@ import (
 )
 
 func main() {
-	fmt.Println("WELCOME TO QUANTS GATEWAY")
+	fmt.Println("WELCOME TO BASE CAMP, READY TO SUBDUE CHOMOLUNGMA!")
 
 	// config server
 	config.Setup()

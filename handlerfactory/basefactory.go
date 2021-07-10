@@ -39,14 +39,14 @@ func FactoryImport(c *gin.Context) {
 			if err != nil {
 				c.JSON(http.StatusBadRequest, gin.H{"code": dtos.AIM_SITE_GET_ERROR, "msg": "wrong", "data": err.Error()})
 			} else {
-				c.JSON(http.StatusBadRequest, gin.H{"code": dtos.OK, "msg": "succeed", "data": result})
+				c.JSON(http.StatusOK, gin.H{"code": dtos.OK, "msg": "succeed", "data": result})
 			}
 		case "POST":
 			result, err := handler.Post(importReq.Url, importReq.Body)
 			if err != nil {
 				c.JSON(http.StatusBadRequest, gin.H{"code": dtos.AIM_SITE_POST_ERROR, "msg": "wrong", "data": err.Error()})
 			} else {
-				c.JSON(http.StatusBadRequest, gin.H{"code": dtos.OK, "msg": "succeed", "data": result})
+				c.JSON(http.StatusOK, gin.H{"code": dtos.OK, "msg": "succeed", "data": result})
 			}
 		default:
 			c.JSON(http.StatusBadRequest, gin.H{"code": dtos.UNKNOW_METHOD, "msg": "Sorry", "data": ""})
@@ -54,5 +54,5 @@ func FactoryImport(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusBadRequest, gin.H{"code": dtos.AIM_SITE_NOT_EXIST, "msg": "Sorry", "data": err.Error()})
+	c.JSON(http.StatusBadRequest, gin.H{"code": dtos.AIM_SITE_NOT_EXIST, "msg": "Sorry", "data": ""})
 }
