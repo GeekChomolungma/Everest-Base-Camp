@@ -11,6 +11,11 @@ import (
 )
 
 func WebsocketHandler(c *gin.Context) {
+	go loop(c)
+}
+
+func loop(c *gin.Context) {
+	// create the chomo ws conn
 	var upGrader = &websocket.Upgrader{
 		CheckOrigin: func(r *http.Request) bool {
 			return true
@@ -21,17 +26,17 @@ func WebsocketHandler(c *gin.Context) {
 		fmt.Println(err.Error())
 		return
 	}
-	defer wsConn.Close()
 
 	// channel to read Chomolungma msg
 	chomoReadChannel := make(chan []byte, 10)
-	go readLoop(wsConn, chomoReadChannel)
+	stopChannel := make(chan int)
+	go readLoop(wsConn, chomoReadChannel, stopChannel)
 
 	//create ws to huobi server
 	HuoBiWs := new(chomows.WebSocketClientBase).Init("api-aws.huobi.pro", "/ws")
 	HuoBiWs.SetHandler(
 		func() {
-			go sendLoop(HuoBiWs, chomoReadChannel)
+			go sendLoop(HuoBiWs, chomoReadChannel, stopChannel)
 		},
 		func(response []byte) {
 			// send BinaryMessage resp to Chomolungma
@@ -42,25 +47,29 @@ func WebsocketHandler(c *gin.Context) {
 		})
 
 	HuoBiWs.Connect(true)
-	HuoBiWs.Close()
 }
 
-func readLoop(wsConn *websocket.Conn, rch chan []byte) {
+func readLoop(wsConn *websocket.Conn, rch chan []byte, stopChannel chan int) {
 	for {
 		_, message, err := wsConn.ReadMessage()
 		fmt.Println(message)
 		if err != nil {
-			applogger.Info("WebSocket connected", err.Error())
+			applogger.Info("Chomo WebSocket disconnected:", err.Error())
+			stopChannel <- 1
+			wsConn.Close()
+			return
 		}
 		rch <- message
 	}
 }
 
-func sendLoop(WebSocketClientBase *chomows.WebSocketClientBase, sch chan []byte) {
+func sendLoop(WebSocketClientBase *chomows.WebSocketClientBase, sch chan []byte, stopChannel chan int) {
 	for {
 		select {
 		case message := <-sch:
 			WebSocketClientBase.Send(string(message))
+		case <-stopChannel:
+			WebSocketClientBase.Close()
 		}
 	}
 }
