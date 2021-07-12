@@ -1,4 +1,4 @@
-package chomows
+package huobi
 
 import (
 	"fmt"
@@ -8,7 +8,7 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-func WebsocketHandler(c *gin.Context) {
+func WebsocketHandlerV2(c *gin.Context) {
 	var upGrader = &websocket.Upgrader{
 		CheckOrigin: func(r *http.Request) bool {
 			return true
@@ -28,6 +28,7 @@ func WebsocketHandler(c *gin.Context) {
 			fmt.Println(err.Error())
 			break
 		}
+
 		// write
 		responseMsg := "hello, websocket!"
 		err = wsConn.WriteMessage(mt, []byte(responseMsg))
