@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 
+	"github.com/GeekChomolungma/Everest-Base-Camp/chomows"
 	"github.com/GeekChomolungma/Everest-Base-Camp/config"
 	"github.com/GeekChomolungma/Everest-Base-Camp/handlerfactory"
 
@@ -24,6 +25,7 @@ func main() {
 
 	// for gateway restful action
 	r.POST("/api/v1/Chomolungma/entrypoint", handlerfactory.FactoryImport)
+	r.GET("/ws", chomows.WebsocketHandler)
 
 	// server run!
 	r.Run(config.ServerSetting.Host)
