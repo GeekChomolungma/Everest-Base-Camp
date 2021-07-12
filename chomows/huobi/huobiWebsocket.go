@@ -29,7 +29,7 @@ func loop(c *gin.Context) {
 
 	// channel to read Chomolungma msg
 	chomoReadChannel := make(chan []byte, 10)
-	stopChannel := make(chan int)
+	stopChannel := make(chan int, 10)
 	go readLoop(wsConn, chomoReadChannel, stopChannel)
 
 	//create ws to huobi server
@@ -55,8 +55,8 @@ func readLoop(wsConn *websocket.Conn, rch chan []byte, stopChannel chan int) {
 		fmt.Println(message)
 		if err != nil {
 			applogger.Info("Chomo WebSocket disconnected:", err.Error())
-			stopChannel <- 1
 			wsConn.Close()
+			stopChannel <- 1
 			return
 		}
 		rch <- message
@@ -71,6 +71,7 @@ func sendLoop(WebSocketClientBase *chomows.WebSocketClientBase, sch chan []byte,
 		case <-stopChannel:
 			applogger.Info("Chomo disconnected, close HuoBi conn too.")
 			WebSocketClientBase.Close()
+			return
 		}
 	}
 }
