@@ -11,10 +11,6 @@ import (
 )
 
 func WebsocketHandler(c *gin.Context) {
-	go loop(c)
-}
-
-func loop(c *gin.Context) {
 	// create the chomo ws conn
 	var upGrader = &websocket.Upgrader{
 		CheckOrigin: func(r *http.Request) bool {
