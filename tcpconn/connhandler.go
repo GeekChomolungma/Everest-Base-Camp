@@ -1,31 +1,34 @@
-package huobi
+package tcpconn
 
 import (
-	"net/http"
+	"net"
 
 	"github.com/GeekChomolungma/Everest-Base-Camp/chomows"
+	"github.com/GeekChomolungma/Everest-Base-Camp/config"
 	"github.com/GeekChomolungma/Everest-Base-Camp/logging/applogger"
-	"github.com/gin-gonic/gin"
-	"github.com/gorilla/websocket"
 )
 
-func WebsocketHandler(c *gin.Context) {
-	// create the chomo ws conn
-	var upGrader = &websocket.Upgrader{
-		CheckOrigin: func(r *http.Request) bool {
-			return true
-		},
-	}
-	wsConn, err := upGrader.Upgrade(c.Writer, c.Request, nil)
+func TcpServerStart() {
+	ln, err := net.Listen("tcp", config.TcpServerSetting.Host)
 	if err != nil {
-		applogger.Error("WebSocket UpGrade failed:", err.Error())
-		return
+		// handle error
+		applogger.Error("TcpServerStart Listen failed:", err.Error())
 	}
+	for {
+		conn, err := ln.Accept()
+		if err != nil {
+			// handle error
+			applogger.Error("TcpServerStart Accept failed:", err.Error())
+		}
+		go handleConn(conn)
+	}
+}
 
+func handleConn(conn net.Conn) {
 	// channel to read Chomolungma msg
 	chomoReadChannel := make(chan []byte, 10)
 	stopChannel := make(chan int, 10)
-	go readLoop(wsConn, chomoReadChannel, stopChannel)
+	go readLoop(conn, chomoReadChannel, stopChannel)
 
 	//create ws to huobi server
 	HuoBiWs := new(chomows.WebSocketClientBase).Init("api-aws.huobi.pro", "/ws")
@@ -35,7 +38,7 @@ func WebsocketHandler(c *gin.Context) {
 		},
 		func(response []byte) {
 			// send BinaryMessage resp to Chomolungma
-			err = wsConn.WriteMessage(websocket.BinaryMessage, response)
+			_, err := conn.Write(response)
 			if err != nil {
 				applogger.Error("HuoBiWs send BinaryMessage resp to Chomolungma failed:", err.Error())
 			}
@@ -44,16 +47,20 @@ func WebsocketHandler(c *gin.Context) {
 	HuoBiWs.Connect(true)
 }
 
-func readLoop(wsConn *websocket.Conn, rch chan []byte, stopChannel chan int) {
+func readLoop(conn net.Conn, rch chan []byte, stopChannel chan int) {
 	for {
-		_, message, err := wsConn.ReadMessage()
+		buf := make([]byte, 1024*8)
+		n, err := conn.Read(buf)
 		if err != nil {
-			applogger.Info("Chomo WebSocket disconnected:", err.Error())
-			wsConn.Close()
+			applogger.Info("Chomo TCP handleConn error:", err.Error())
+			conn.Close()
 			stopChannel <- 1
 			return
+		} else {
+			applogger.Info("Chomo TCP handleConn Received bytes length %d, Payload: %s", n, string(buf))
 		}
-		rch <- message
+
+		rch <- buf
 	}
 }
 

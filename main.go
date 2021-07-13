@@ -6,6 +6,7 @@ import (
 	"github.com/GeekChomolungma/Everest-Base-Camp/chomows/huobi"
 	"github.com/GeekChomolungma/Everest-Base-Camp/config"
 	"github.com/GeekChomolungma/Everest-Base-Camp/handlerfactory"
+	"github.com/GeekChomolungma/Everest-Base-Camp/tcpconn"
 
 	"github.com/gin-gonic/gin"
 	_ "github.com/go-sql-driver/mysql"
@@ -16,6 +17,10 @@ func main() {
 
 	// config server
 	config.Setup()
+
+	// start tcp sever for client tcp conn
+	// like. subscribtion
+	go tcpconn.TcpServerStart()
 
 	// init factory
 	handlerfactory.Init()
@@ -29,5 +34,5 @@ func main() {
 	r.GET("/ws/v2", huobi.WebsocketHandlerV2)
 
 	// server run!
-	r.Run(config.ServerSetting.Host)
+	r.Run(config.WebServerSetting.Host)
 }

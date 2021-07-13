@@ -6,11 +6,17 @@ import (
 	"github.com/go-ini/ini"
 )
 
-type Server struct {
+type WebServer struct {
 	Host string
 }
 
-var ServerSetting = &Server{}
+var WebServerSetting = &WebServer{}
+
+type TcpServer struct {
+	Host string
+}
+
+var TcpServerSetting = &TcpServer{}
 
 // Setup 启动配置
 func Setup() {
@@ -19,7 +25,8 @@ func Setup() {
 		log.Fatalf("Fail to parse '../my.ini': %v", err)
 	}
 
-	mapTo(cfg, "server", ServerSetting)
+	mapTo(cfg, "webserver", WebServerSetting)
+	mapTo(cfg, "tcpserver", TcpServerSetting)
 }
 
 func mapTo(cfg *ini.File, section string, v interface{}) {
