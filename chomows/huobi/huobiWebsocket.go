@@ -62,6 +62,8 @@ func sendLoop(WebSocketClientBase *chomows.WebSocketClientBase, sch chan []byte,
 		select {
 		case message := <-sch:
 			WebSocketClientBase.Send(string(message))
+			// TODO: if send err, should close the chomolungma client conn
+
 		case <-stopChannel:
 			applogger.Info("Chomo disconnected, close HuoBi conn too.")
 			WebSocketClientBase.Close()

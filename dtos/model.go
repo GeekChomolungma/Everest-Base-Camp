@@ -1,5 +1,8 @@
 package dtos
 
+// All not used since this program transfer
+// raw msgs which are from Chomolungma to remote server
+// Not parse them yet.
 type HuoBiWs struct {
 	Sub   string `json:"sub"`
 	Unsub string `json:"unsub"`
