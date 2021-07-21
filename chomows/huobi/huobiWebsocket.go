@@ -50,7 +50,7 @@ func readLoop(wsConn *websocket.Conn, rch chan []byte, stopChannel chan int) {
 		applogger.Debug("Chomo readLoop goting to read...")
 		_, message, err := wsConn.ReadMessage()
 		if err != nil {
-			applogger.Info("Chomo WebSocket disconnected: %s", err.Error())
+			applogger.Error("Chomo WebSocket disconnected: %s", err.Error())
 			wsConn.Close()
 			stopChannel <- 1
 			return
