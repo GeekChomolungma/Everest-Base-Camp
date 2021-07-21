@@ -45,7 +45,9 @@ func WebsocketHandler(c *gin.Context) {
 }
 
 func readLoop(wsConn *websocket.Conn, rch chan []byte, stopChannel chan int) {
+	applogger.Info("Chomo readLoop started.")
 	for {
+		applogger.Debug("Chomo readLoop goting to read...")
 		_, message, err := wsConn.ReadMessage()
 		if err != nil {
 			applogger.Info("Chomo WebSocket disconnected: %s", err.Error())
@@ -53,6 +55,7 @@ func readLoop(wsConn *websocket.Conn, rch chan []byte, stopChannel chan int) {
 			stopChannel <- 1
 			return
 		}
+		applogger.Debug("Chomo readLoop recieved msg:%s", string(message))
 		rch <- message
 	}
 }
