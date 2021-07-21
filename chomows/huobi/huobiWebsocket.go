@@ -9,6 +9,8 @@ import (
 	"github.com/gorilla/websocket"
 )
 
+var clientID int = 0
+
 func WebsocketHandler(c *gin.Context) {
 	// create the chomo ws conn
 	var upGrader = &websocket.Upgrader{
@@ -25,7 +27,8 @@ func WebsocketHandler(c *gin.Context) {
 	// channel to read Chomolungma msg
 	chomoReadChannel := make(chan []byte, 10)
 	stopChannel := make(chan int, 10)
-	go readLoop(wsConn, chomoReadChannel, stopChannel)
+	clientID = clientID + 1
+	go readLoop(wsConn, chomoReadChannel, stopChannel, clientID)
 
 	//create ws to huobi server
 	HuoBiWs := new(chomows.WebSocketClientBase).Init("api-aws.huobi.pro", "/ws")
@@ -44,18 +47,18 @@ func WebsocketHandler(c *gin.Context) {
 	HuoBiWs.Connect(true)
 }
 
-func readLoop(wsConn *websocket.Conn, rch chan []byte, stopChannel chan int) {
-	applogger.Info("Chomo readLoop started.")
+func readLoop(wsConn *websocket.Conn, rch chan []byte, stopChannel chan int, clientID int) {
+	applogger.Info("Chomo client-%d readLoop started.", clientID)
 	for {
-		applogger.Debug("Chomo readLoop goting to read...")
+		applogger.Debug("Chomo client-%d readLoop goting to read...", clientID)
 		_, message, err := wsConn.ReadMessage()
 		if err != nil {
-			applogger.Error("Chomo WebSocket disconnected: %s", err.Error())
+			applogger.Error("Chomo client-%d WebSocket disconnected: %s", clientID, err.Error())
 			wsConn.Close()
 			stopChannel <- 1
 			return
 		}
-		applogger.Debug("Chomo readLoop recieved msg:%s", string(message))
+		applogger.Debug("Chomo client-%d readLoop recieved msg:%s", clientID, string(message))
 		rch <- message
 	}
 }
