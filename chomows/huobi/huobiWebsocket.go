@@ -2,6 +2,7 @@ package huobi
 
 import (
 	"net/http"
+	"time"
 
 	"github.com/GeekChomolungma/Everest-Base-Camp/chomows"
 	"github.com/GeekChomolungma/Everest-Base-Camp/logging/applogger"
@@ -25,7 +26,7 @@ func WebsocketHandler(c *gin.Context) {
 	}
 
 	// channel to read Chomolungma msg
-	chomoReadChannel := make(chan []byte, 10)
+	chomoReadChannel := make(chan []byte, 100)
 	stopChannel := make(chan int, 10)
 	clientID = clientID + 1
 	go readLoop(wsConn, chomoReadChannel, stopChannel, clientID)
@@ -67,6 +68,8 @@ func sendLoop(WebSocketClientBase *chomows.WebSocketClientBase, sch chan []byte,
 	for {
 		select {
 		case message := <-sch:
+			// frequency limit
+			time.Sleep(time.Duration(100) * time.Millisecond)
 			WebSocketClientBase.Send(string(message))
 			// TODO: if send err, should close the chomolungma client conn
 
