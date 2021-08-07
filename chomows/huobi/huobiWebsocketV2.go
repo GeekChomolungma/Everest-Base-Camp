@@ -36,9 +36,9 @@ func WebsocketHandlerV2(c *gin.Context) {
 		},
 		func(response []byte) {
 			// send BinaryMessage resp to Chomolungma
-			err = wsConn.WriteMessage(websocket.BinaryMessage, response)
+			err = wsConn.WriteMessage(websocket.TextMessage, response)
 			if err != nil {
-				applogger.Error("HuoBiWs V2 send BinaryMessage resp to Chomolungma failed:", err.Error())
+				applogger.Error("HuoBiWs V2 send TextMessage resp to Chomolungma failed:", err.Error())
 			}
 		})
 
