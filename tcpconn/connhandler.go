@@ -36,7 +36,7 @@ func handleConn(conn net.Conn) {
 		func() {
 			go sendLoop(HuoBiWs, chomoReadChannel, stopChannel)
 		},
-		func(response []byte) {
+		func(response []byte, msgType int) {
 			// send BinaryMessage resp to Chomolungma
 			_, err := conn.Write(response)
 			if err != nil {

@@ -22,7 +22,7 @@ type ConnectedHandler func()
 type MessageHandler func(message string) (interface{}, error)
 
 // It will be invoked after response is parsed
-type ResponseHandler func(response []byte)
+type ResponseHandler func(response []byte, msgType int)
 
 // The base class that responsible to get data from websocket
 type WebSocketClientBase struct {
@@ -205,7 +205,7 @@ func (p *WebSocketClientBase) readLoop() {
 				continue
 			}
 
-			_, buf, err := p.conn.ReadMessage()
+			msgType, buf, err := p.conn.ReadMessage()
 			if err != nil {
 				applogger.Error("Read error: %s", err)
 				time.Sleep(TimerIntervalSecond * time.Second)
@@ -213,7 +213,8 @@ func (p *WebSocketClientBase) readLoop() {
 			}
 
 			p.lastReceivedTime = time.Now()
-			p.responseHandler(buf)
+
+			p.responseHandler(buf, msgType)
 		}
 	}
 }
