@@ -1,14 +1,16 @@
 package huobi
 
 import (
-	"fmt"
 	"net/http"
 
+	"github.com/GeekChomolungma/Everest-Base-Camp/chomows"
+	"github.com/GeekChomolungma/Everest-Base-Camp/logging/applogger"
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
 )
 
 func WebsocketHandlerV2(c *gin.Context) {
+	// create the chomo ws conn
 	var upGrader = &websocket.Upgrader{
 		CheckOrigin: func(r *http.Request) bool {
 			return true
@@ -16,25 +18,29 @@ func WebsocketHandlerV2(c *gin.Context) {
 	}
 	wsConn, err := upGrader.Upgrade(c.Writer, c.Request, nil)
 	if err != nil {
-		fmt.Println(err.Error())
+		applogger.Error("WebSocket V2 UpGrade failed:", err.Error())
 		return
 	}
-	defer wsConn.Close()
-	for {
-		// read
-		mt, message, err := wsConn.ReadMessage()
-		fmt.Println(string(message))
-		if err != nil {
-			fmt.Println(err.Error())
-			break
-		}
 
-		// write
-		responseMsg := "hello, websocket!"
-		err = wsConn.WriteMessage(mt, []byte(responseMsg))
-		if err != nil {
-			fmt.Println(err.Error())
-			break
-		}
-	}
+	// channel to read Chomolungma msg
+	chomoReadChannel := make(chan []byte, 100)
+	stopChannel := make(chan int, 10)
+	clientID = clientID + 1
+	go readLoop(wsConn, chomoReadChannel, stopChannel, clientID)
+
+	//create ws V2 to huobi server
+	HuoBiWs := new(chomows.WebSocketClientBase).Init("api-aws.huobi.pro", "/ws/v2")
+	HuoBiWs.SetHandler(
+		func() {
+			go sendLoop(HuoBiWs, chomoReadChannel, stopChannel)
+		},
+		func(response []byte) {
+			// send BinaryMessage resp to Chomolungma
+			err = wsConn.WriteMessage(websocket.BinaryMessage, response)
+			if err != nil {
+				applogger.Error("HuoBiWs V2 send BinaryMessage resp to Chomolungma failed:", err.Error())
+			}
+		})
+
+	HuoBiWs.Connect(true)
 }
