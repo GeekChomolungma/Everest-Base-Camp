@@ -35,7 +35,7 @@ func WebsocketHandler(c *gin.Context) {
 	HuoBiWs := new(chomows.WebSocketClientBase).Init("api-aws.huobi.pro", "/ws")
 	HuoBiWs.SetHandler(
 		func() {
-			go sendLoop(HuoBiWs, chomoReadChannel, stopChannel)
+			go sendLoop(HuoBiWs, chomoReadChannel, stopChannel, clientID)
 		},
 		func(response []byte, msgType int) {
 			// send BinaryMessage resp to Chomolungma
@@ -64,12 +64,13 @@ func readLoop(wsConn *websocket.Conn, rch chan []byte, stopChannel chan int, cli
 	}
 }
 
-func sendLoop(WebSocketClientBase *chomows.WebSocketClientBase, sch chan []byte, stopChannel chan int) {
+func sendLoop(WebSocketClientBase *chomows.WebSocketClientBase, sch chan []byte, stopChannel chan int, sendLoopClientID int) {
 	for {
 		select {
 		case message := <-sch:
 			// frequency limit
 			time.Sleep(time.Duration(100) * time.Millisecond)
+			applogger.Debug("Chomo client-%d sendLoop Send msg to Remote Exchange Server:%s", sendLoopClientID, string(message))
 			WebSocketClientBase.Send(string(message))
 			// TODO: if send err, should close the chomolungma client conn
 
