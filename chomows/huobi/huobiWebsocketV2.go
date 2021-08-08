@@ -32,7 +32,7 @@ func WebsocketHandlerV2(c *gin.Context) {
 	HuoBiWs := new(chomows.WebSocketClientBase).Init("api-aws.huobi.pro", "/ws/v2")
 	HuoBiWs.SetHandler(
 		func() {
-			go sendLoop(HuoBiWs, chomoReadChannel, stopChannel)
+			go sendLoop(HuoBiWs, chomoReadChannel, stopChannel, clientID)
 		},
 		func(response []byte, msgType int) {
 			// send BinaryMessage resp to Chomolungma
