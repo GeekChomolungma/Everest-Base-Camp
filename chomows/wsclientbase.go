@@ -11,7 +11,7 @@ import (
 
 const (
 	TimerIntervalSecond = 5
-	ReconnectWaitSecond = 60
+	ReconnectWaitSecond = 15
 	feedPath            = "/feed"
 )
 
@@ -171,7 +171,7 @@ func (p *WebSocketClientBase) tickerLoop() {
 			if elapsedSecond > ReconnectWaitSecond {
 				applogger.Info("WebSocket reconnect...")
 				p.disconnectWebSocket()
-				p.connectWebSocket()
+				//p.connectWebSocket()
 			}
 		}
 	}
