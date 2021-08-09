@@ -169,9 +169,8 @@ func (p *WebSocketClientBase) tickerLoop() {
 			applogger.Debug("WebSocket received data %f sec ago", elapsedSecond)
 
 			if elapsedSecond > ReconnectWaitSecond {
-				applogger.Info("WebSocket reconnect...")
-				p.disconnectWebSocket()
-				//p.connectWebSocket()
+				applogger.Info("WebSocket Close...")
+				p.Close()
 			}
 		}
 	}
