@@ -21,7 +21,7 @@ func init() {
 
 	// define default level as debug level
 	atomicLevel = zap.NewAtomicLevel()
-	atomicLevel.SetLevel(zapcore.DebugLevel)
+	atomicLevel.SetLevel(zapcore.InfoLevel)
 
 	core := zapcore.NewCore(zapcore.NewConsoleEncoder(encoderCfg), os.Stdout, atomicLevel)
 	sugaredLogger = zap.New(core).Sugar()
